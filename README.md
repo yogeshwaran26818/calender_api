@@ -2,6 +2,10 @@
 
 Complete Google OAuth 2.0 implementation with Node.js/Express backend and React frontend.
 
+## ⚠️ Security Notice
+
+**IMPORTANT:** Never commit your `.env` file or expose your API credentials in public repositories. Always use environment variables and keep sensitive data secure.
+
 ## Project Structure
 ```
 calender_api/
@@ -43,17 +47,33 @@ npm install
 ```
 
 ### 3. Environment Variables
-The `.env` file is already configured with your credentials:
-- GOOGLE_CLIENT_ID: 1034039399224-mf140bku4hbd9r14adgupr9nehtt9t4o.apps.googleusercontent.com
-- GOOGLE_CLIENT_SECRET: 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
-- MongoDB URI: Your cluster connection string
+Create a `.env` file in the `backend` directory with the following variables:
+```env
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+MONGODB_URI=your_mongodb_connection_string_here
+SESSION_SECRET=your_random_session_secret_here
+USE_MONGODB=true
+OPENAI_API_KEY=your_openai_api_key_here
+```
 
-### 4. Google OAuth Configuration
+**How to get credentials:**
+1. **Google OAuth:** Visit [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. **MongoDB:** Visit [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+3. **OpenAI:** Visit [OpenAI Platform](https://platform.openai.com/api-keys)
+
+### 4. Add .env to .gitignore
+Make sure your `.env` file is in `.gitignore` to prevent exposing credentials:
+```bash
+echo ".env" >> backend/.gitignore
+```
+
+### 5. Google OAuth Configuration
 Make sure your Google OAuth settings have:
 - **Authorized JavaScript origins:** http://localhost:3000
 - **Authorized redirect URIs:** http://localhost:5000/auth/google/callback
 
-### 5. Run the Application
+### 6. Run the Application
 
 **Start Backend (Terminal 1):**
 ```bash
