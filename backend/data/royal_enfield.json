@@ -1,0 +1,49 @@
+{
+    "service_intervals": {
+        "free_services": [
+            {
+                "service": "1st",
+                "km": "500–750",
+                "days": "45"
+            },
+            {
+                "service": "2nd",
+                "km": "4500–5000",
+                "days": "180"
+            },
+            {
+                "service": "3rd",
+                "km": "9500–10000",
+                "days": "270"
+            }
+        ]
+    },
+    "paid_service_items": [
+        "Engine oil change",
+        "Brake service",
+        "Chain cleaning and lubrication",
+        "Air filter cleaning"
+    ],
+    "costs": {
+        "engine_oil": "350-800",
+        "general_service_labour": "800-1500",
+        "chain_lubrication": "50-150",
+        "brake_pad_replacement": "350-800"
+    },
+    "rsa": {
+        "available": true,
+        "benefits": [
+            "Towing",
+            "Battery jump-start",
+            "Flat tyre help",
+            "Fuel delivery"
+        ]
+    },
+    "booking_requirements": [
+        "Name",
+        "Phone number",
+        "Bike model",
+        "Registration number",
+        "Preferred date and time"
+    ]
+}

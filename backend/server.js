@@ -1,5 +1,17 @@
 require('dotenv').config();
+const cid = process.env.GOOGLE_CLIENT_ID || "";
+const csec = process.env.GOOGLE_CLIENT_SECRET || "";
+console.log("--------------- OAUTH DEBUG ---------------");
+console.log(`CLIENT_ID:     ${cid.substring(0, 5)}...${cid.substring(cid.length - 5)} (Length: ${cid.length})`);
+console.log(`CLIENT_SECRET: ${csec.substring(0, 5)}...${csec.substring(csec.length - 5)} (Length: ${csec.length})`);
+console.log("-------------------------------------------");
+
+
+
+
+
 const express = require('express');
+
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
@@ -57,6 +69,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/api', require('./routes/auth'));
 app.use('/api/mcp', require('./routes/mcp'));
 app.use('/api/llm', require('./routes/llm'));
+
 app.use('/api/prospects', require('./routes/prospects'));
 
 // Protected dashboard route
@@ -64,8 +77,8 @@ app.get('/dashboard', (req, res) => {
   if (!req.user) {
     return res.status(401).json({ success: false, message: 'Access denied. Please login.' });
   }
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Welcome to dashboard',
     user: {
       name: req.user.name,

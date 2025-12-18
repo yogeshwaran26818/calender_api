@@ -38,7 +38,7 @@ async function parseWithLLM(prompt) {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const targetIndex = days.indexOf(targetDay.toLowerCase());
     const todayIndex = today.getDay();
-    
+
     let daysToAdd;
     if (targetIndex > todayIndex) {
       // Target day is later this week
@@ -50,7 +50,7 @@ async function parseWithLLM(prompt) {
       // Target day has passed this week, go to next week
       daysToAdd = 7 - todayIndex + targetIndex;
     }
-    
+
     const nextDate = new Date(today);
     nextDate.setDate(today.getDate() + daysToAdd);
     return nextDate.toISOString().split('T')[0];
@@ -61,9 +61,9 @@ async function parseWithLLM(prompt) {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const targetIndex = days.indexOf(targetDay.toLowerCase());
     const todayIndex = today.getDay();
-    
+
     let daysToAdd;
-    
+
     // Special case: if today is Saturday (6) and target is Sunday (0)
     if (todayIndex === 6 && targetIndex === 0) {
       daysToAdd = 1; // Tomorrow is Sunday
@@ -76,7 +76,7 @@ async function parseWithLLM(prompt) {
     else {
       daysToAdd = 7 - todayIndex + targetIndex;
     }
-    
+
     const thisWeekDate = new Date(today);
     thisWeekDate.setDate(today.getDate() + daysToAdd);
     return thisWeekDate.toISOString().split('T')[0];
@@ -277,7 +277,7 @@ async function checkForConflicts(calendar, instances) {
       let endMinute = inst.endMinute;
       let endAmPm = inst.endAmPm;
       let endDate = inst.endDate || inst.date;
-      
+
       if (!endHour || !endMinute || !endAmPm) {
         // Default to 1 hour duration
         const endTime = addMinutesToDateTime(inst.date, inst.startHour, inst.startMinute, inst.startAmPm, 60);
@@ -303,33 +303,33 @@ async function checkForConflicts(calendar, instances) {
 
       const existing = resp.data.items || [];
       console.log(`📋 Found ${existing.length} existing events on ${inst.date}`);
-      
+
       for (const ex of existing) {
         if (!ex.start?.dateTime && !ex.start?.date) continue;
-        
+
         const exStart = ex.start?.dateTime || ex.start?.date;
         const exEnd = ex.end?.dateTime || ex.end?.date;
-        
+
         // Skip all-day events for now
         if (!exStart.includes('T') || !exEnd.includes('T')) continue;
-        
+
         // Convert existing event to our format for comparison
         const exStartDate = new Date(exStart);
         const exEndDate = new Date(exEnd);
-        
+
         const existingEvent = {
           date: exStart.split('T')[0],
-          startHour: exStartDate.getHours() > 12 ? (exStartDate.getHours() - 12).toString().padStart(2, '0') : 
-                     exStartDate.getHours() === 0 ? '12' : exStartDate.getHours().toString().padStart(2, '0'),
+          startHour: exStartDate.getHours() > 12 ? (exStartDate.getHours() - 12).toString().padStart(2, '0') :
+            exStartDate.getHours() === 0 ? '12' : exStartDate.getHours().toString().padStart(2, '0'),
           startMinute: exStartDate.getMinutes().toString().padStart(2, '0'),
           startAmPm: exStartDate.getHours() >= 12 ? 'PM' : 'AM',
-          endHour: exEndDate.getHours() > 12 ? (exEndDate.getHours() - 12).toString().padStart(2, '0') : 
-                   exEndDate.getHours() === 0 ? '12' : exEndDate.getHours().toString().padStart(2, '0'),
+          endHour: exEndDate.getHours() > 12 ? (exEndDate.getHours() - 12).toString().padStart(2, '0') :
+            exEndDate.getHours() === 0 ? '12' : exEndDate.getHours().toString().padStart(2, '0'),
           endMinute: exEndDate.getMinutes().toString().padStart(2, '0'),
           endAmPm: exEndDate.getHours() >= 12 ? 'PM' : 'AM',
           endDate: exEnd.split('T')[0]
         };
-        
+
         const proposedEvent = {
           date: inst.date,
           startHour: inst.startHour,
@@ -340,7 +340,7 @@ async function checkForConflicts(calendar, instances) {
           endAmPm: endAmPm,
           endDate: endDate
         };
-        
+
         console.log(`⏰ Comparing:`);
         console.log(`   Proposed: ${proposedEvent.date} ${proposedEvent.startHour}:${proposedEvent.startMinute} ${proposedEvent.startAmPm} - ${proposedEvent.endHour}:${proposedEvent.endMinute} ${proposedEvent.endAmPm}`);
         console.log(`   Existing: ${existingEvent.date} ${existingEvent.startHour}:${existingEvent.startMinute} ${existingEvent.startAmPm} - ${existingEvent.endHour}:${existingEvent.endMinute} ${existingEvent.endAmPm} (${ex.summary})`);
@@ -513,7 +513,7 @@ router.post('/create', async (req, res) => {
     console.log('🔍 Checking for calendar conflicts...');
     const conflicts = await checkForConflicts(calendar, instances);
     if (conflicts.length > 0) {
-      console.log(`⚠️ Found ${conflicts.length} scheduling conflict(s)`);
+      console.log(`⚠️ Found ${conflicts.length} scheduling conflict(s) - BLOCKING event creation`);
       return res.json({
         success: false,
         hasConflicts: true,
@@ -583,7 +583,7 @@ router.post('/create', async (req, res) => {
       const endDateForIso = inst.endDate || inst.date;
       const startDateTime = `${inst.date}T${startTime24}:00`;
       const endDateTime = `${endDateForIso}T${endTime24}:00`;
-      
+
       // Validate that end time is after start time
       const startMs = new Date(startDateTime).getTime();
       const endMs = new Date(endDateTime).getTime();
@@ -643,7 +643,7 @@ router.post('/create', async (req, res) => {
     if (autoSetCount > 0) {
       message = `Note: ${autoSetCount} event(s) had no duration specified, so they were set to 1 hour by default.`;
     }
-    
+
     return res.json({ success: true, created, requested: instances.length, message });
   } catch (err) {
     console.error('❌ MCP Error:', err.message || err);
@@ -693,7 +693,7 @@ router.post('/resolve-conflict', async (req, res) => {
     // Action 1: Overwrite - delete conflicting events and create new ones
     if (action === 'overwrite') {
       console.log(`⚡ Overwriting ${conflictIndices.length} conflicting event(s)`);
-      
+
       // Delete existing conflicting events first
       if (conflicts && Array.isArray(conflicts)) {
         for (const conflict of conflicts) {
@@ -712,9 +712,9 @@ router.post('/resolve-conflict', async (req, res) => {
         const inst = instancesToProcess[idx];
         const startTime24 = convertTo24Hour(inst.startHour, inst.startMinute, inst.startAmPm);
         const endTime24 = convertTo24Hour(inst.endHour || inst.startHour, inst.endMinute || inst.startMinute, inst.endAmPm || inst.startAmPm);
-  const endDateForIso = inst.endDate || inst.date;
-  const startDateTime = `${inst.date}T${startTime24}:00`;
-  const endDateTime = `${endDateForIso}T${endTime24}:00`;
+        const endDateForIso = inst.endDate || inst.date;
+        const startDateTime = `${inst.date}T${startTime24}:00`;
+        const endDateTime = `${endDateForIso}T${endTime24}:00`;
 
         const eventData = {
           summary: inst.title,
@@ -745,11 +745,11 @@ router.post('/resolve-conflict', async (req, res) => {
             summary: evResp.data.summary,
             start: evResp.data.start,
             end: evResp.data.end,
-           timeZone: evResp.data.start.timeZone,
-           meetLink: evResp.data.conferenceData?.entryPoints?.find(ep => ep.entryPointType === 'video')?.uri || null,
-           attendees: evResp.data.attendees || [],
-           htmlLink: evResp.data.htmlLink || null,
-           organizer: evResp.data.organizer || null
+            timeZone: evResp.data.start.timeZone,
+            meetLink: evResp.data.conferenceData?.entryPoints?.find(ep => ep.entryPointType === 'video')?.uri || null,
+            attendees: evResp.data.attendees || [],
+            htmlLink: evResp.data.htmlLink || null,
+            organizer: evResp.data.organizer || null
           });
         } catch (err) {
           console.error('❌ Failed to create event:', inst, err?.message);
@@ -760,11 +760,11 @@ router.post('/resolve-conflict', async (req, res) => {
     // Action 2: Postpone existing - move existing events and create new ones
     else if (action === 'postpone_existing') {
       console.log(`📅 Postponing ${conflictIndices.length} existing event(s)`);
-      
+
       if (!rescheduleTime || !rescheduleTime.date || !rescheduleTime.startHour) {
         return res.status(400).json({ success: false, error: 'Reschedule time required for postponing existing events' });
       }
-      
+
       // Update existing conflicting events to new time
       if (conflicts && Array.isArray(conflicts)) {
         for (const conflict of conflicts) {
@@ -773,7 +773,7 @@ router.post('/resolve-conflict', async (req, res) => {
             const endTime24 = convertTo24Hour(rescheduleTime.endHour || rescheduleTime.startHour, rescheduleTime.endMinute || '00', rescheduleTime.endAmPm || rescheduleTime.startAmPm);
             const startDateTime = `${rescheduleTime.date}T${startTime24}:00`;
             const endDateTime = `${rescheduleTime.date}T${endTime24}:00`;
-            
+
             await calendar.events.patch({
               calendarId: 'primary',
               eventId: conflict.conflictingEvent.id,
@@ -792,9 +792,9 @@ router.post('/resolve-conflict', async (req, res) => {
         const inst = instancesToProcess[idx];
         const startTime24 = convertTo24Hour(inst.startHour, inst.startMinute, inst.startAmPm);
         const endTime24 = convertTo24Hour(inst.endHour || inst.startHour, inst.endMinute || inst.startMinute, inst.endAmPm || inst.startAmPm);
-  const endDateForIso = inst.endDate || inst.date;
-  const startDateTime = `${inst.date}T${startTime24}:00`;
-  const endDateTime = `${endDateForIso}T${endTime24}:00`;
+        const endDateForIso = inst.endDate || inst.date;
+        const startDateTime = `${inst.date}T${startTime24}:00`;
+        const endDateTime = `${endDateForIso}T${endTime24}:00`;
 
         const eventData = {
           summary: inst.title,
@@ -820,11 +820,11 @@ router.post('/resolve-conflict', async (req, res) => {
             summary: evResp.data.summary,
             start: evResp.data.start,
             end: evResp.data.end,
-           timeZone: evResp.data.start.timeZone,
-           meetLink: evResp.data.conferenceData?.entryPoints?.find(ep => ep.entryPointType === 'video')?.uri || null,
-           attendees: evResp.data.attendees || [],
-           htmlLink: evResp.data.htmlLink || null,
-           organizer: evResp.data.organizer || null
+            timeZone: evResp.data.start.timeZone,
+            meetLink: evResp.data.conferenceData?.entryPoints?.find(ep => ep.entryPointType === 'video')?.uri || null,
+            attendees: evResp.data.attendees || [],
+            htmlLink: evResp.data.htmlLink || null,
+            organizer: evResp.data.organizer || null
           });
           console.log(`✅ Created event ${created.length}/${instancesToProcess.length}:`, evResp.data.id);
         } catch (err) {
@@ -836,11 +836,11 @@ router.post('/resolve-conflict', async (req, res) => {
     // Action 3: Reschedule new - move new events to a different time
     else if (action === 'reschedule_new') {
       console.log(`📅 Rescheduling ${conflictIndices.length} new event(s)`);
-      
+
       if (!rescheduleTime || !rescheduleTime.date || !rescheduleTime.startHour) {
         return res.status(400).json({ success: false, error: 'Reschedule time required for rescheduling new events' });
       }
-      
+
       // Update conflicting instances to new time
       for (const idx of conflictIndices) {
         const inst = instancesToProcess[idx];
@@ -858,9 +858,9 @@ router.post('/resolve-conflict', async (req, res) => {
         const inst = instancesToProcess[idx];
         const startTime24 = convertTo24Hour(inst.startHour, inst.startMinute, inst.startAmPm);
         const endTime24 = convertTo24Hour(inst.endHour || inst.startHour, inst.endMinute || inst.startMinute, inst.endAmPm || inst.startAmPm);
-  const endDateForIso = inst.endDate || inst.date;
-  const startDateTime = `${inst.date}T${startTime24}:00`;
-  const endDateTime = `${endDateForIso}T${endTime24}:00`;
+        const endDateForIso = inst.endDate || inst.date;
+        const startDateTime = `${inst.date}T${startTime24}:00`;
+        const endDateTime = `${endDateForIso}T${endTime24}:00`;
 
         const eventData = {
           summary: inst.title,
@@ -886,11 +886,11 @@ router.post('/resolve-conflict', async (req, res) => {
             summary: evResp.data.summary,
             start: evResp.data.start,
             end: evResp.data.end,
-           timeZone: evResp.data.start.timeZone,
-           meetLink: evResp.data.conferenceData?.entryPoints?.find(ep => ep.entryPointType === 'video')?.uri || null,
-           attendees: evResp.data.attendees || [],
-           htmlLink: evResp.data.htmlLink || null,
-           organizer: evResp.data.organizer || null
+            timeZone: evResp.data.start.timeZone,
+            meetLink: evResp.data.conferenceData?.entryPoints?.find(ep => ep.entryPointType === 'video')?.uri || null,
+            attendees: evResp.data.attendees || [],
+            htmlLink: evResp.data.htmlLink || null,
+            organizer: evResp.data.organizer || null
           });
           console.log(`✅ Created event ${created.length}/${instancesToProcess.length}:`, evResp.data.id);
         } catch (err) {
@@ -1000,9 +1000,9 @@ router.post('/cleanup-duplicates', async (req, res) => {
 
     for (const event of events) {
       if (!event.start?.dateTime || !event.summary) continue;
-      
+
       const key = `${event.summary}_${event.start.dateTime}_${event.end.dateTime}`;
-      
+
       if (seen.has(key)) {
         duplicates.push({
           id: event.id,
@@ -1033,8 +1033,8 @@ router.post('/cleanup-duplicates', async (req, res) => {
       }
     }
 
-    return res.json({ 
-      success: true, 
+    return res.json({
+      success: true,
       message: `Cleaned up ${deleted.length} duplicate events`,
       deleted: deleted.length,
       found: duplicates.length
@@ -1045,6 +1045,165 @@ router.post('/cleanup-duplicates', async (req, res) => {
       success: false,
       error: err.message || 'Failed to cleanup duplicates'
     });
+  }
+});
+
+/**
+ * POST /api/mcp/free-slots
+ * Find available time slots on a given date
+ */
+router.post('/free-slots', async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+
+    const { date, duration } = req.body;
+    if (!date || !duration) {
+      return res.status(400).json({ success: false, error: 'Date and duration required' });
+    }
+
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      'http://localhost:5000/auth/google/callback'
+    );
+
+    oAuth2Client.setCredentials({
+      access_token: req.user.accessToken,
+      refresh_token: req.user.refreshToken
+    });
+
+    const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+
+    const dayStart = `${date}T00:00:00Z`;
+    const dayEnd = `${date}T23:59:59Z`;
+
+    const resp = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin: dayStart,
+      timeMax: dayEnd,
+      singleEvents: true,
+      orderBy: 'startTime'
+    });
+
+    const events = resp.data.items || [];
+    const busySlots = events.map(e => ({
+      start: new Date(e.start.dateTime || e.start.date).getHours() * 60 + new Date(e.start.dateTime || e.start.date).getMinutes(),
+      end: new Date(e.end.dateTime || e.end.date).getHours() * 60 + new Date(e.end.dateTime || e.end.date).getMinutes()
+    }));
+
+    const workStart = 9 * 60; // 9 AM
+    const workEnd = 18 * 60; // 6 PM
+    const freeSlots = [];
+
+    for (let time = workStart; time < workEnd; time += 30) {
+      const slotEnd = time + parseInt(duration);
+      if (slotEnd > workEnd) break;
+
+      const hasConflict = busySlots.some(busy =>
+        !(slotEnd <= busy.start || time >= busy.end)
+      );
+
+      if (!hasConflict) {
+        const hours = Math.floor(time / 60);
+        const mins = time % 60;
+        freeSlots.push({
+          start_time: `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
+        });
+      }
+
+      if (freeSlots.length >= 4) break;
+    }
+
+    return res.json({ success: true, slots: freeSlots });
+  } catch (error) {
+    console.error('Free slots error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/mcp/reschedule
+ * Deletes an old meeting and creates a new one.
+ */
+router.post('/reschedule', async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Not authenticated.' });
+    }
+
+    const { oldEventId, email, meeting_date, start_time, duration_minutes } = req.body;
+
+    // 1. Setup Calendar Client
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      'http://localhost:5000/auth/google/callback'
+    );
+    oAuth2Client.setCredentials({ access_token: req.user.accessToken, refresh_token: req.user.refreshToken });
+    const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+
+    // 2. Delete Old Event
+    try {
+      if (oldEventId) {
+        await calendar.events.delete({ calendarId: 'primary', eventId: oldEventId });
+        console.log(`🗑️ Deleted old event: ${oldEventId}`);
+      }
+    } catch (err) {
+      console.warn('⚠️ Failed to delete old event (might not exist):', err.message);
+    }
+
+    // 3. Create New Event (reuse create logic logic conceptually, but implemented directly here for simplicity with known args)
+    // Construct a prompt for the Parse logic to reuse it, OR just build the event directly since we have structured args.
+    // Building directly is safer/faster since we have strict args from LLM.
+
+    // Time calculations
+    const startTime24 = start_time;
+    // Calculate end time
+    const [h, m] = start_time.split(':').map(Number);
+    const startDateObj = new Date(`${meeting_date}T${start_time}:00`);
+    const endDateObj = new Date(startDateObj.getTime() + duration_minutes * 60000);
+
+    // Format for Google Calendar
+    const toGoogleTime = (dateObj) => {
+      // Need ISO string but preserve local time offset if possible, or just use UTC/ISO
+      // Simplest: YYYY-MM-DDTHH:MM:SS
+      return dateObj.toISOString().split('.')[0]; // Naive, returns UTC usually. 
+      // Better: Construct string manually to match input "meeting_date" + "start_time"
+    };
+
+    // Let's use the explicit strings to ensure local time correctness relative to user perception
+    const endH = endDateObj.getHours().toString().padStart(2, '0');
+    const endM = endDateObj.getMinutes().toString().padStart(2, '0');
+    const endTime24 = `${endH}:${endM}`;
+    // Handle date rollover if needed (not active in this simple snippet, assume same day mostly or naive calc)
+    const endDateStr = endDateObj.toISOString().split('T')[0];
+
+    const eventData = {
+      summary: "Royal Enfield Product Discussion",
+      description: `Meeting with ${email}`,
+      start: { dateTime: `${meeting_date}T${startTime24}:00`, timeZone: 'Asia/Kolkata' }, // Defaulting TZ
+      end: { dateTime: `${endDateStr}T${endTime24}:00`, timeZone: 'Asia/Kolkata' },
+      attendees: [{ email }]
+    };
+
+    const evResp = await calendar.events.insert({ calendarId: 'primary', resource: eventData });
+    const newEvent = evResp.data;
+
+    return res.json({
+      success: true,
+      created: [{
+        id: newEvent.id,
+        summary: newEvent.summary,
+        start: newEvent.start,
+        end: newEvent.end
+      }]
+    });
+
+  } catch (error) {
+    console.error('❌ Reschedule Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 

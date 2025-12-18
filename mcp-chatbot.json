@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "name": "meeting_scheduler",
+  "description": "A booking chatbot that schedules meetings through structured steps or full user inputs.",
+  "tools": [
+    {
+      "name": "calendar.schedule_meeting",
+      "description": "Creates a meeting invite. If missing values, assistant will ask follow-up questions, then call this tool.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Guest email ID of the participant."
+          },
+          "meeting_date": {
+            "type": "string",
+            "description": "Meeting date in YYYY-MM-DD format."
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Meeting start time in HH:MM (24-hour) format."
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "description": "Duration of the meeting in minutes."
+          }
+        },
+        "required": [
+          "email",
+          "meeting_date",
+          "start_time",
+          "duration_minutes"
+        ]
+      }
+    }
+  ],
+  "instructions": {
+    "assistant": {
+      "full_input_scenario": "If user provides all meeting details in a single message, directly call the tool calendar.schedule_meeting.",
+      "partial_input_scenario": "If user provides only email or partial details, ask follow-up questions until all required fields are collected. After collecting everything, call the tool.",
+      "conversation_memory": "Maintain last 10 conversation messages to understand context and avoid asking for already-provided information.",
+      "data_extraction": "LLM should analyze user query and conversation history to extract: email, meeting_date (YYYY-MM-DD), start_time (HH:MM 24-hour), duration_minutes.",
+      "ask_one_at_a_time": "Ask ONLY ONE question at a time. Never ask for information already provided in conversation history."
+    }
+  }
+}
